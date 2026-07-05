@@ -41,7 +41,7 @@ jobs:
           sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" || true
 
       - name: Compiler l'APK debug (Gradle wrapper)
-        run: ./gradlew assembleDebug --no-daemon --stacktrace --info
+        run: gradle assembleDebug --no-daemon --stacktrace --info
 
       - name: Publier l'APK généré
         uses: actions/upload-artifact@v4
