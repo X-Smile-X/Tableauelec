@@ -48,10 +48,24 @@ jobs:
 
       - name: Compiler l'APK debug (utilise gradle wrapper si présent)
         run: |
+          # Detecter le répertoire du projet contenant un build Gradle
+          if [ -f ./settings.gradle ] || [ -f ./settings.gradle.kts ] || [ -f ./build.gradle ] || [ -f ./build.gradle.kts ]; then
+            PROJECT_DIR="."
+          elif [ -d ./app ] && ( [ -f ./app/settings.gradle ] || [ -f ./app/settings.gradle.kts ] || [ -f ./app/build.gradle ] || [ -f ./app/build.gradle.kts ] ); then
+            PROJECT_DIR="./app"
+          else
+            echo "Aucun fichier de build Gradle trouvé à la racine ni dans ./app. Ajoutez settings.gradle et le Gradle wrapper ou ajustez le workflow."
+            exit 1
+          fi
+          echo "Using project dir: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
           if [ -f ./gradlew ]; then
             ./gradlew assembleDebug --no-daemon --stacktrace --info
-          else
+          elif command -v gradle >/dev/null 2>&1; then
             gradle assembleDebug --no-daemon --stacktrace --info
+          else
+            echo "Ni gradlew ni gradle système non trouvés. Ajoutez le Gradle wrapper au dépôt ou installez Gradle dans l'environnement."
+            exit 1
           fi
 
       - name: Publier l'APK généré
