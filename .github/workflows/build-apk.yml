@@ -21,13 +21,27 @@ jobs:
       - name: Installer le SDK Android
         uses: android-actions/setup-android@v3
 
-      - name: Installer Gradle
+      # (Optionnel) Vous pouvez supprimer l'étape suivante si vous préférez, 
+      # le wrapper va gérer la version de Gradle.
+      - name: Installer Gradle (facultatif)
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.7
 
-      - name: Compiler l'APK debug
-        run: gradle assembleDebug --no-daemon
+      - name: Rendre le wrapper Gradle exécutable
+        run: chmod +x ./gradlew
+
+      - name: Accepter les licences Android SDK (rapide)
+        run: |
+          yes | sdkmanager --licenses || true
+
+      - name: (Optionnel) Installer composants SDK requis
+        # Décommentez et ajustez la version si votre project nécessite une API / build-tools précise
+        run: |
+          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" || true
+
+      - name: Compiler l'APK debug (Gradle wrapper)
+        run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
       - name: Publier l'APK généré
         uses: actions/upload-artifact@v4
