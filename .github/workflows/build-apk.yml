@@ -28,8 +28,14 @@ jobs:
         with:
           gradle-version: 8.7
 
-      - name: Rendre le wrapper Gradle exécutable
-        run: chmod +x ./gradlew
+      - name: Rendre le wrapper Gradle exécutable si présent
+        run: |
+          if [ -f ./gradlew ]; then
+            chmod +x ./gradlew
+            echo "Found gradlew, made it executable"
+          else
+            echo "No gradlew found in repository; will use system gradle if available"
+          fi
 
       - name: Accepter les licences Android SDK (rapide)
         run: |
@@ -40,8 +46,13 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.0" || true
 
-      - name: Compiler l'APK debug (Gradle wrapper)
-        run: gradle assembleDebug --no-daemon --stacktrace --info
+      - name: Compiler l'APK debug (utilise gradle wrapper si présent)
+        run: |
+          if [ -f ./gradlew ]; then
+            ./gradlew assembleDebug --no-daemon --stacktrace --info
+          else
+            gradle assembleDebug --no-daemon --stacktrace --info
+          fi
 
       - name: Publier l'APK généré
         uses: actions/upload-artifact@v4
